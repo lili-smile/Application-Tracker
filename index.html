@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投递管家 - 大学生求职投递追踪器</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+/* ==================== CSS Variables ==================== */
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-card-hover: #1c2a4a;
+  --bg-input: #0d1b36;
+  --text-primary: #e8e8f0;
+  --text-secondary: #8888a8;
+  --text-muted: #555570;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --accent-glow: rgba(108, 92, 231, 0.3);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-active: rgba(108, 92, 231, 0.5);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Priority Colors */
+  --p5: #ff4757;
+  --p5-bg: rgba(255, 71, 87, 0.12);
+  --p5-border: rgba(255, 71, 87, 0.3);
+  --p4: #ff6b35;
+  --p4-bg: rgba(255, 107, 53, 0.12);
+  --p4-border: rgba(255, 107, 53, 0.3);
+  --p3: #ffc048;
+  --p3-bg: rgba(255, 192, 72, 0.12);
+  --p3-border: rgba(255, 192, 72, 0.3);
+  --p2: #2ed573;
+  --p2-bg: rgba(46, 213, 115, 0.12);
+  --p2-border: rgba(46, 213, 115, 0.3);
+  --p1: #747d8c;
+  --p1-bg: rgba(116, 125, 140, 0.12);
+  --p1-border: rgba(116, 125, 140, 0.3);
+
+  /* Status Colors */
+  --status-applied: #6c5ce7;
+  --status-test: #0984e3;
+  --status-interview1: #00b894;
+  --status-interview2: #00cec9;
+  --status-hr: #fdcb6e;
+  --status-offer: #e17055;
+  --status-signed: #d63031;
+  --status-rejected: #636e72;
+  --status-silent: #b2bec3;
+}
+
+/* ==================== Reset & Base ==================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Background atmosphere */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(9, 132, 227, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 184, 148, 0.04) 0%, transparent 50%);
+  z-index: -1;
+  animation: bgFloat 20s ease-in-out infinite;
+}
+
+@keyframes bgFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(2%, -1%) rotate(1deg); }
+  66% { transform: translate(-1%, 2%) rotate(-1deg); }
+}
+
+/* ==================== Scrollbar ==================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* ==================== Header ==================== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 15, 26, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent), #0984e3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  box-shadow: 0 2px 12px var(--accent-glow);
+}
+
+.logo-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.logo-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ==================== Buttons ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #0984e3);
+  color: white;
+  box-shadow: 0 2px 12px var(--accent-glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-color: var(--border-active);
+}
+
+.btn-ghost.active {
+  background: rgba(108, 92, 231, 0.15);
+  color: var(--accent-light);
+  border-color: var(--border-active);
+}
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 13px;
+}
+
+.btn-danger {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.2);
+}
+
+.btn-danger:hover {
+  background: rgba(255, 71, 87, 0.25);
+}
+
+/* ==================== Main Layout ==================== */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px 80px;
+}
+
+/* ==================== Stats Bar ==================== */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.stat-info { flex: 1; }
+
+.stat-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ==================== Toolbar ==================== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.search-box input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px 8px 36px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  width: 240px;
+  transition: var(--transition);
+  outline: none;
+}
+
+.search-box input:focus {
+  border-color: var(--border-active);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
+}
+
+.filter-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888a8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.filter-select:focus {
+  border-color: var(--border-active);
+}
+
+.filter-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* ==================== View Toggle ==================== */
+.view-toggle {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.view-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-toggle button.active {
+  background: var(--accent);
+  color: white;
+}
+
+.view-toggle button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ==================== List View ==================== */
+.list-view {
+  display: none;
+}
+
+.list-view.active { display: block; }
+
+.app-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.app-table thead th {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+}
+
+.app-table thead th:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.app-table thead th i {
+  margin-left: 4px;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.app-table tbody tr {
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.app-table tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.app-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.app-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.company-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.company-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.company-position {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+/* Priority Badge */
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.priority-badge.p5 { background: var(--p5-bg); color: var(--p5); border: 1px solid var(--p5-border); }
+.priority-badge.p4 { background: var(--p4-bg); color: var(--p4); border: 1px solid var(--p4-border); }
+.priority-badge.p3 { background: var(--p3-bg); color: var(--p3); border: 1px solid var(--p3-border); }
+.priority-badge.p2 { background: var(--p2-bg); color: var(--p2); border: 1px solid var(--p2-border); }
+.priority-badge.p1 { background: var(--p1-bg); color: var(--p1); border: 1px solid var(--p1-border); }
+
+.priority-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.priority-dot.p5 { background: var(--p5); }
+.priority-dot.p4 { background: var(--p4); }
+.priority-dot.p3 { background: var(--p3); }
+.priority-dot.p2 { background: var(--p2); }
+.priority-dot.p1 { background: var(--p1); }
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-badge.applied { background: rgba(108, 92, 231, 0.15); color: #a29bfe; }
+.status-badge.test { background: rgba(9, 132, 227, 0.15); color: #74b9ff; }
+.status-badge.interview1 { background: rgba(0, 184, 148, 0.15); color: #55efc4; }
+.status-badge.interview2 { background: rgba(0, 206, 201, 0.15); color: #81ecec; }
+.status-badge.hr { background: rgba(253, 203, 110, 0.15); color: #ffeaa7; }
+.status-badge.offer { background: rgba(225, 112, 85, 0.15); color: #fab1a0; }
+.status-badge.signed { background: rgba(214, 48, 49, 0.15); color: #ff7675; }
+.status-badge.rejected { background: rgba(99, 110, 114, 0.15); color: #b2bec3; }
+.status-badge.silent { background: rgba(178, 190, 195, 0.1); color: #636e72; }
+
+.date-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.action-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: var(--transition);
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.action-btn.delete:hover {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
+}
+
+/* ==================== Board View ==================== */
+.board-view {
+  display: none;
+}
+
+.board-view.active { display: block; }
+
+.board {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  align-items: flex-start;
+}
+
+.board-column {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 260px;
+  max-width: 300px;
+  flex-shrink: 0;
+  min-height: 200px;
+}
+
+.board-column-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.board-column-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.board-column-count {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.board-column-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.board-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.board-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: 4px 0 0 4px;
+}
+
+.board-card.p5::before { background: var(--p5); }
+.board-card.p4::before { background: var(--p4); }
+.board-card.p3::before { background: var(--p3); }
+.board-card.p2::before { background: var(--p2); }
+.board-card.p1::before { background: var(--p1); }
+
+.board-card:hover {
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.board-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.board-card-company {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.board-card-position {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.board-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.board-card-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.board-card-channel {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* ==================== Empty State ==================== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state i {
+  font-size: 48px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.empty-state p {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.empty-state small {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ==================== Modal ==================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: var(--transition);
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ==================== Form ==================== */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-label .required {
+  color: #ff4757;
+  margin-left: 2px;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  border-color: var(--border-active);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888a8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.form-select option {
+  background: var(--bg-secondary);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Priority Selector */
+.priority-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.priority-option {
+  flex: 1;
+  padding: 10px 8px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.priority-option .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: 0 auto 6px;
+}
+
+.priority-option .label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.priority-option.p5 .dot { background: var(--p5); }
+.priority-option.p4 .dot { background: var(--p4); }
+.priority-option.p3 .dot { background: var(--p3); }
+.priority-option.p2 .dot { background: var(--p2); }
+.priority-option.p1 .dot { background: var(--p1); }
+
+.priority-option.p5.selected { border-color: var(--p5); background: var(--p5-bg); }
+.priority-option.p4.selected { border-color: var(--p4); background: var(--p4-bg); }
+.priority-option.p3.selected { border-color: var(--p3); background: var(--p3-bg); }
+.priority-option.p2.selected { border-color: var(--p2); background: var(--p2-bg); }
+.priority-option.p1.selected { border-color: var(--p1); background: var(--p1-bg); }
+
+.priority-option:hover { border-color: var(--text-muted); }
+
+/* ==================== Detail Panel ==================== */
+.detail-panel {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -480px;
+  width: 480px;
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  z-index: 500;
+  transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.3);
+}
+
+.detail-panel.active {
+  display: block;
+  right: 0;
+}
+
+.detail-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 499;
+}
+
+.detail-backdrop.active {
+  display: block;
+}
+
+.detail-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 10;
+}
+
+.detail-company {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.detail-position {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.detail-body {
+  padding: 24px;
+}
+
+.detail-section {
+  margin-bottom: 28px;
+}
+
+.detail-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-section-title i {
+  font-size: 14px;
+  color: var(--accent-light);
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.info-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.info-item-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.info-item-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 24px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--border);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -20px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--bg-secondary);
+}
+
+.timeline-dot.applied { border-color: var(--status-applied); }
+.timeline-dot.test { border-color: var(--status-test); }
+.timeline-dot.interview1 { border-color: var(--status-interview1); }
+.timeline-dot.interview2 { border-color: var(--status-interview2); }
+.timeline-dot.hr { border-color: var(--status-hr); }
+.timeline-dot.offer { border-color: var(--status-offer); }
+.timeline-dot.signed { border-color: var(--status-signed); }
+.timeline-dot.rejected { border-color: var(--status-rejected); }
+
+.timeline-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.timeline-content {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.timeline-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Add Timeline Entry */
+.add-timeline-entry {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.add-timeline-entry .form-group {
+  margin-bottom: 12px;
+}
+
+.add-timeline-entry .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.add-timeline-entry .form-row {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ==================== Toast ==================== */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  font-size: 14px;
+  color: var(--text-primary);
+  box-shadow: var(--shadow);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast.success { border-left: 3px solid #2ed573; }
+.toast.error { border-left: 3px solid #ff4757; }
+.toast.info { border-left: 3px solid #0984e3; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(40px); }
+}
+
+/* ==================== Export Button ==================== */
+.export-menu {
+  position: relative;
+}
+
+.export-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  min-width: 160px;
+  z-index: 200;
+}
+
+.export-dropdown.active {
+  display: block;
+}
+
+.export-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.export-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.export-dropdown button i {
+  color: var(--text-secondary);
+  width: 16px;
+  text-align: center;
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 768px) {
+  .header { padding: 0 16px; }
+  .main { padding: 16px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 22px; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar-left, .toolbar-right { flex-wrap: wrap; }
+  .search-box input { width: 100%; }
+  .board { grid-template-columns: 1fr; }
+  .detail-panel { width: 100%; right: -100%; }
+  .form-row { grid-template-columns: 1fr; }
+  .app-table { font-size: 13px; }
+  .app-table thead th, .app-table tbody td { padding: 10px 12px; }
+  .hide-mobile { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .stats-bar { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-icon { width: 36px; height: 36px; font-size: 15px; }
+  .stat-value { font-size: 20px; }
+  .priority-selector { gap: 4px; }
+  .priority-option { padding: 8px 4px; }
+  .priority-option .label { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== Header ==================== -->
+<header class="header">
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon"><i class="fa-solid fa-paper-plane"></i></div>
+      <div>
+        <div class="logo-text">投递管家</div>
+        <div class="logo-sub">Application Tracker</div>
+      </div>
+    </a>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="loadSampleData()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> 加载示例
+      </button>
+      <div class="export-menu">
+        <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu()">
+          <i class="fa-solid fa-download"></i> 导出
+        </button>
+        <div class="export-dropdown" id="exportDropdown">
+          <button onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> 导出 CSV</button>
+          <button onclick="exportJSON()"><i class="fa-solid fa-file-code"></i> 导出 JSON</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fa-solid fa-plus"></i> 添加投递
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== Main ==================== -->
+<main class="main">
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar"></div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="搜索公司或岗位..." oninput="renderAll()">
+      </div>
+      <select class="filter-select" id="statusFilter" onchange="renderAll()">
+        <option value="all">全部状态</option>
+        <option value="applied">📋 已投递</option>
+        <option value="test">✍️ 笔试中</option>
+        <option value="interview1">📞 一面</option>
+        <option value="interview2">📞 二面</option>
+        <option value="hr">📞 HR面</option>
+        <option value="offer">🎉 Offer</option>
+        <option value="signed">✅ 已签约</option>
+        <option value="rejected">❌ 已淘汰</option>
+        <option value="silent">⏳ 无回音</option>
+      </select>
+      <select class="filter-select" id="priorityFilter" onchange="renderAll()">
+        <option value="all">全部关注度</option>
+        <option value="5">🔴 梦想公司</option>
+        <option value="4">🟠 很想去</option>
+        <option value="3">🟡 还不错</option>
+        <option value="2">🟢 保底选项</option>
+        <option value="1">⚪ 随便投投</option>
+      </select>
+    </div>
+    <div class="toolbar-right">
+      <div class="view-toggle">
+        <button class="active" id="btnListView" onclick="switchView('list')">
+          <i class="fa-solid fa-list"></i> <span class="hide-mobile">列表</span>
+        </button>
+        <button id="btnBoardView" onclick="switchView('board')">
+          <i class="fa-solid fa-columns"></i> <span class="hide-mobile">看板</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div class="list-view active" id="listView">
+    <table class="app-table">
+      <thead>
+        <tr>
+          <th onclick="sortTable('company')">公司 / 岗位 <i class="fa-solid fa-sort"></i></th>
+          <th onclick="sortTable('priority')">关注度 <i class="fa-solid fa-sort"></i></th>
+          <th onclick="sortTable('status')">状态 <i class="fa-solid fa-sort"></i></th>
+          <th onclick="sortTable('date')" class="hide-mobile">投递日期 <i class="fa-solid fa-sort"></i></th>
+          <th class="hide-mobile">渠道</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="listBody"></tbody>
+    </table>
+    <div class="empty-state" id="listEmpty" style="display:none;">
+      <i class="fa-solid fa-inbox"></i>
+      <p>还没有投递记录</p>
+      <small>点击右上角「添加投递」开始记录吧</small>
+    </div>
+  </div>
+
+  <!-- Board View -->
+  <div class="board-view" id="boardView">
+    <div class="board" id="boardBody"></div>
+    <div class="empty-state" id="boardEmpty" style="display:none;">
+      <i class="fa-solid fa-inbox"></i>
+      <p>还没有投递记录</p>
+      <small>点击右上角「添加投递」开始记录吧</small>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== Add/Edit Modal ==================== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">添加投递记录</div>
+      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">公司名称 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="formCompany" placeholder="如：字节跳动">
+        </div>
+        <div class="form-group">
+          <label class="form-label">投递岗位 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="formPosition" placeholder="如：前端开发工程师">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">投递日期</label>
+          <input type="date" class="form-input" id="formDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">投递渠道</label>
+          <select class="form-select" id="formChannel">
+            <option value="">请选择</option>
+            <option value="官网">官网</option>
+            <option value="BOSS直聘">BOSS直聘</option>
+            <option value="牛客">牛客</option>
+            <option value="拉勾">拉勾</option>
+            <option value="猎聘">猎聘</option>
+            <option value="内推">内推</option>
+            <option value="校招官网">校招官网</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">投递链接</label>
+        <input type="url" class="form-input" id="formLink" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">当前状态</label>
+        <select class="form-select" id="formStatus">
+          <option value="applied">📋 已投递</option>
+          <option value="test">✍️ 笔试中</option>
+          <option value="interview1">📞 一面</option>
+          <option value="interview2">📞 二面</option>
+          <option value="hr">📞 HR面</option>
+          <option value="offer">🎉 Offer</option>
+          <option value="signed">✅ 已签约</option>
+          <option value="rejected">❌ 已淘汰</option>
+          <option value="silent">⏳ 无回音</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">关注度</label>
+        <div class="priority-selector" id="prioritySelector">
+          <button type="button" class="priority-option p5" data-value="5" onclick="selectPriority(5)">
+            <div class="dot"></div>
+            <div class="label">梦想</div>
+          </button>
+          <button type="button" class="priority-option p4" data-value="4" onclick="selectPriority(4)">
+            <div class="dot"></div>
+            <div class="label">很想去</div>
+          </button>
+          <button type="button" class="priority-option p3" data-value="3" onclick="selectPriority(3)">
+            <div class="dot"></div>
+            <div class="label">还不错</div>
+          </button>
+          <button type="button" class="priority-option p2" data-value="2" onclick="selectPriority(2)">
+            <div class="dot"></div>
+            <div class="label">保底</div>
+          </button>
+          <button type="button" class="priority-option p1" data-value="1" onclick="selectPriority(1)">
+            <div class="dot"></div>
+            <div class="label">随便</div>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-textarea" id="formNote" placeholder="记录一些关键信息，如学长评价、面试官风格等"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveRecord()">
+        <i class="fa-solid fa-check"></i> 保存
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Detail Panel ==================== -->
+<div class="detail-backdrop" id="detailBackdrop" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <div>
+      <div class="detail-company" id="detailCompany"></div>
+      <div class="detail-position" id="detailPosition"></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="action-btn" onclick="editFromDetail()" title="编辑"><i class="fa-solid fa-pen"></i></button>
+      <button class="modal-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<!-- ==================== Toast Container ==================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ==================== Data Model ====================
+const STORAGE_KEY = 'app_tracker_data';
+const STATUS_MAP = {
+  applied:    { label: '已投递', icon: '📋', color: 'applied' },
+  test:       { label: '笔试中', icon: '✍️', color: 'test' },
+  interview1: { label: '一面',   icon: '📞', color: 'interview1' },
+  interview2: { label: '二面',   icon: '📞', color: 'interview2' },
+  hr:         { label: 'HR面',   icon: '📞', color: 'hr' },
+  offer:      { label: 'Offer',  icon: '🎉', color: 'offer' },
+  signed:     { label: '已签约', icon: '✅', color: 'signed' },
+  rejected:   { label: '已淘汰', icon: '❌', color: 'rejected' },
+  silent:     { label: '无回音', icon: '⏳', color: 'silent' }
+};
+
+const PRIORITY_MAP = {
+  5: { label: '梦想公司', emoji: '🔴', class: 'p5' },
+  4: { label: '很想去',   emoji: '🟠', class: 'p4' },
+  3: { label: '还不错',   emoji: '🟡', class: 'p3' },
+  2: { label: '保底选项', emoji: '🟢', class: 'p2' },
+  1: { label: '随便投投', emoji: '⚪', class: 'p1' }
+};
+
+const BOARD_COLUMNS = ['applied', 'test', 'interview1', 'interview2', 'hr', 'offer', 'signed', 'rejected', 'silent'];
+
+let applications = [];
+let currentSort = { field: 'date', dir: 'desc' };
+let selectedPriority = 3;
+let currentDetailId = null;
+
+// ==================== Storage ====================
+function loadData() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    applications = data ? JSON.parse(data) : [];
+  } catch (e) {
+    applications = [];
+  }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+}
+
+// ==================== Utility ====================
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function formatDateFull(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getCompanyColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const colors = ['#6c5ce7', '#0984e3', '#00b894', '#e17055', '#d63031', '#fdcb6e', '#e84393', '#00cec9', '#636e72', '#2d3436'];
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function getCompanyInitial(name) {
+  return name.charAt(0);
+}
+
+function daysSince(dateStr) {
+  if (!dateStr) return null;
+  const now = new Date();
+  const d = new Date(dateStr);
+  return Math.floor((now - d) / (1000 * 60 * 60 * 24));
+}
+
+// ==================== Filter & Sort ====================
+function getFilteredData() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value;
+  const priorityFilter = document.getElementById('priorityFilter').value;
+
+  let data = applications.filter(app => {
+    const matchSearch = !search || 
+      app.company.toLowerCase().includes(search) || 
+      app.position.toLowerCase().includes(search);
+    const matchStatus = statusFilter === 'all' || app.status === statusFilter;
+    const matchPriority = priorityFilter === 'all' || app.priority === parseInt(priorityFilter);
+    return matchSearch && matchStatus && matchPriority;
+  });
+
+  // Sort
+  data.sort((a, b) => {
+    let va, vb;
+    switch (currentSort.field) {
+      case 'company':
+        va = a.company; vb = b.company;
+        return currentSort.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      case 'priority':
+        va = a.priority; vb = b.priority;
+        break;
+      case 'status':
+        va = BOARD_COLUMNS.indexOf(a.status);
+        vb = BOARD_COLUMNS.indexOf(b.status);
+        break;
+      case 'date':
+      default:
+        va = a.date || ''; vb = b.date || '';
+        break;
+    }
+    return currentSort.dir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+
+  return data;
+}
+
+function sortTable(field) {
+  if (currentSort.field === field) {
+    currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSort.field = field;
+    currentSort.dir = field === 'date' ? 'desc' : 'asc';
+  }
+  renderAll();
+}
+
+// ==================== Render Stats ====================
+function renderStats() {
+  const total = applications.length;
+  const counts = {};
+  BOARD_COLUMNS.forEach(s => counts[s] = 0);
+  applications.forEach(app => {
+    if (counts[app.status] !== undefined) counts[app.status]++;
+  });
+
+  const statsHtml = `
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(108,92,231,0.15);color:#a29bfe;">
+        <i class="fa-solid fa-paper-plane"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">${total}</div>
+        <div class="stat-label">总投递</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(0,184,148,0.15);color:#55efc4;">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">${counts.interview1 + counts.interview2 + counts.hr}</div>
+        <div class="stat-label">面试中</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(225,112,85,0.15);color:#fab1a0;">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">${counts.offer + counts.signed}</div>
+        <div class="stat-label">Offer</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(99,110,114,0.15);color:#b2bec3;">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">${counts.rejected + counts.silent}</div>
+        <div class="stat-label">已淘汰/无回音</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(255,71,87,0.15);color:#ff4757;">
+        <i class="fa-solid fa-fire"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">${applications.filter(a => a.priority === 5).length}</div>
+        <div class="stat-label">梦想公司</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('statsBar').innerHTML = statsHtml;
+}
+
+// ==================== Render List View ====================
+function renderListView() {
+  const data = getFilteredData();
+  const tbody = document.getElementById('listBody');
+  const empty = document.getElementById('listEmpty');
+
+  if (data.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tbody.innerHTML = data.map(app => {
+    const p = PRIORITY_MAP[app.priority] || PRIORITY_MAP[3];
+    const s = STATUS_MAP[app.status] || STATUS_MAP.applied;
+    const color = getCompanyColor(app.company);
+    const days = daysSince(app.date);
+    let daysText = '';
+    if (days !== null) {
+      if (days === 0) daysText = '今天';
+      else if (days === 1) daysText = '昨天';
+      else if (days < 30) daysText = `${days}天前`;
+      else daysText = `${Math.floor(days / 30)}个月前`;
+    }
+
+    return `
+      <tr onclick="openDetail('${app.id}')">
+        <td>
+          <div class="company-cell">
+            <div class="company-avatar" style="background:${color}">${getCompanyInitial(app.company)}</div>
+            <div>
+              <div class="company-name">${app.company}</div>
+              <div class="company-position">${app.position}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="priority-badge ${p.class}">
+            <span class="priority-dot ${p.class}"></span>
+            ${p.label}
+          </span>
+        </td>
+        <td>
+          <span class="status-badge ${s.color}">${s.icon} ${s.label}</span>
+        </td>
+        <td class="date-text hide-mobile">${formatDate(app.date)}<br><small style="color:var(--text-muted)">${daysText}</small></td>
+        <td class="hide-mobile"><span style="color:var(--text-secondary);font-size:13px">${app.channel || '-'}</span></td>
+        <td>
+          <div class="action-btns" onclick="event.stopPropagation()">
+            <button class="action-btn" onclick="openEditModal('${app.id}')" title="编辑"><i class="fa-solid fa-pen"></i></button>
+            <button class="action-btn delete" onclick="deleteRecord('${app.id}')" title="删除"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ==================== Render Board View ====================
+function renderBoardView() {
+  const data = getFilteredData();
+  const board = document.getElementById('boardBody');
+  const empty = document.getElementById('boardEmpty');
+
+  if (data.length === 0) {
+    board.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  // Group by status
+  const groups = {};
+  BOARD_COLUMNS.forEach(s => groups[s] = []);
+  data.forEach(app => {
+    if (groups[app.status]) groups[app.status].push(app);
+  });
+
+  board.innerHTML = BOARD_COLUMNS.map(status => {
+    const s = STATUS_MAP[status];
+    const items = groups[status];
+    return `
+      <div class="board-column">
+        <div class="board-column-header">
+          <div class="board-column-title">${s.icon} ${s.label}</div>
+          <div class="board-column-count">${items.length}</div>
+        </div>
+        <div class="board-column-body">
+          ${items.map(app => {
+            const p = PRIORITY_MAP[app.priority] || PRIORITY_MAP[3];
+            return `
+              <div class="board-card ${p.class}" onclick="openDetail('${app.id}')">
+                <div class="board-card-header">
+                  <div class="board-card-company">${app.company}</div>
+                  <span class="priority-dot ${p.class}" title="${p.label}"></span>
+                </div>
+                <div class="board-card-position">${app.position}</div>
+                <div class="board-card-meta">
+                  <span class="board-card-date">${formatDate(app.date)}</span>
+                  ${app.channel ? `<span class="board-card-channel">${app.channel}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== Render All ====================
+function renderAll() {
+  renderStats();
+  renderListView();
+  renderBoardView();
+}
+
+// ==================== View Switch ====================
+function switchView(view) {
+  document.getElementById('listView').classList.toggle('active', view === 'list');
+  document.getElementById('boardView').classList.toggle('active', view === 'board');
+  document.getElementById('btnListView').classList.toggle('active', view === 'list');
+  document.getElementById('btnBoardView').classList.toggle('active', view === 'board');
+}
+
+// ==================== Modal ====================
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = '添加投递记录';
+  document.getElementById('editId').value = '';
+  document.getElementById('formCompany').value = '';
+  document.getElementById('formPosition').value = '';
+  document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('formChannel').value = '';
+  document.getElementById('formLink').value = '';
+  document.getElementById('formStatus').value = 'applied';
+  document.getElementById('formNote').value = '';
+  selectPriority(3);
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function openEditModal(id) {
+  const app = applications.find(a => a.id === id);
+  if (!app) return;
+
+  document.getElementById('modalTitle').textContent = '编辑投递记录';
+  document.getElementById('editId').value = id;
+  document.getElementById('formCompany').value = app.company;
+  document.getElementById('formPosition').value = app.position;
+  document.getElementById('formDate').value = app.date || '';
+  document.getElementById('formChannel').value = app.channel || '';
+  document.getElementById('formLink').value = app.link || '';
+  document.getElementById('formStatus').value = app.status;
+  document.getElementById('formNote').value = app.note || '';
+  selectPriority(app.priority || 3);
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function selectPriority(value) {
+  selectedPriority = value;
+  document.querySelectorAll('.priority-option').forEach(el => {
+    el.classList.toggle('selected', parseInt(el.dataset.value) === value);
+  });
+}
+
+function saveRecord() {
+  const company = document.getElementById('formCompany').value.trim();
+  const position = document.getElementById('formPosition').value.trim();
+
+  if (!company || !position) {
+    showToast('请填写公司名称和投递岗位', 'error');
+    return;
+  }
+
+  const editId = document.getElementById('editId').value;
+  const record = {
+    id: editId || generateId(),
+    company,
+    position,
+    date: document.getElementById('formDate').value,
+    channel: document.getElementById('formChannel').value,
+    link: document.getElementById('formLink').value,
+    status: document.getElementById('formStatus').value,
+    priority: selectedPriority,
+    note: document.getElementById('formNote').value,
+    timeline: [],
+    createdAt: editId ? (applications.find(a => a.id === editId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  if (editId) {
+    // Keep existing timeline
+    const existing = applications.find(a => a.id === editId);
+    if (existing) record.timeline = existing.timeline || [];
+    const idx = applications.findIndex(a => a.id === editId);
+    applications[idx] = record;
+    showToast('记录已更新', 'success');
+  } else {
+    // Add initial timeline entry
+    record.timeline = [{
+      date: new Date().toISOString().split('T')[0],
+      status: 'applied',
+      content: '提交了投递',
+      note: ''
+    }];
+    applications.unshift(record);
+    showToast('投递记录已添加', 'success');
+  }
+
+  saveData();
+  renderAll();
+  closeModal();
+}
+
+function deleteRecord(id) {
+  if (!confirm('确定要删除这条投递记录吗？')) return;
+  applications = applications.filter(a => a.id !== id);
+  saveData();
+  renderAll();
+  closeDetail();
+  showToast('记录已删除', 'info');
+}
+
+// ==================== Detail Panel ====================
+function openDetail(id) {
+  const app = applications.find(a => a.id === id);
+  if (!app) return;
+
+  currentDetailId = id;
+  const p = PRIORITY_MAP[app.priority] || PRIORITY_MAP[3];
+  const s = STATUS_MAP[app.status] || STATUS_MAP.applied;
+  const days = daysSince(app.date);
+
+  document.getElementById('detailCompany').textContent = app.company;
+  document.getElementById('detailPosition').textContent = app.position;
+
+  const timelineHtml = (app.timeline || []).map(t => `
+    <div class="timeline-item">
+      <div class="timeline-dot ${t.status || 'applied'}"></div>
+      <div class="timeline-date">${formatDateFull(t.date)}</div>
+      <div class="timeline-content">${t.content}</div>
+      ${t.note ? `<div class="timeline-note">${t.note}</div>` : ''}
+    </div>
+  `).join('');
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> 基本信息</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-item-label">状态</div>
+          <div class="info-item-value"><span class="status-badge ${s.color}">${s.icon} ${s.label}</span></div>
+        </div>
+        <div class="info-item">
+          <div class="info-item-label">关注度</div>
+          <div class="info-item-value"><span class="priority-badge ${p.class}"><span class="priority-dot ${p.class}"></span>${p.label}</span></div>
+        </div>
+        <div class="info-item">
+          <div class="info-item-label">投递日期</div>
+          <div class="info-item-value">${formatDateFull(app.date)}${days !== null ? ` (${days}天前)` : ''}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item-label">投递渠道</div>
+          <div class="info-item-value">${app.channel || '-'}</div>
+        </div>
+      </div>
+      ${app.link ? `<div style="margin-top:12px"><a href="${app.link}" target="_blank" style="color:var(--accent-light);font-size:13px;text-decoration:none;"><i class="fa-solid fa-arrow-up-right-from-square"></i> 查看投递链接</a></div>` : ''}
+      ${app.note ? `<div style="margin-top:12px;padding:12px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid var(--border);font-size:13px;color:var(--text-secondary)"><strong style="color:var(--text-primary)">备注：</strong>${app.note}</div>` : ''}
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title"><i class="fa-solid fa-timeline"></i> 进展时间线</div>
+      <div class="timeline">
+        ${timelineHtml || '<div style="color:var(--text-muted);font-size:14px;padding:8px 0;">暂无进展记录</div>'}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title"><i class="fa-solid fa-plus-circle"></i> 添加进展</div>
+      <div class="add-timeline-entry">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">日期</label>
+            <input type="date" class="form-input" id="tlDate" value="${new Date().toISOString().split('T')[0]}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">状态变更</label>
+            <select class="form-select" id="tlStatus">
+              ${Object.entries(STATUS_MAP).map(([k, v]) => `<option value="${k}">${v.icon} ${v.label}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">进展描述</label>
+          <input type="text" class="form-input" id="tlContent" placeholder="如：收到一面通知，4月28日下午2点">
+        </div>
+        <div class="form-group">
+          <label class="form-label">备注（选填）</label>
+          <input type="text" class="form-input" id="tlNote" placeholder="如：学长说这轮重点看项目深度">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addTimelineEntry('${id}')" style="width:100%;justify-content:center;margin-top:4px;">
+          <i class="fa-solid fa-plus"></i> 添加进展
+        </button>
+      </div>
+    </div>
+
+    <div style="padding-top:8px;">
+      <button class="btn btn-danger btn-sm" onclick="deleteRecord('${id}')" style="width:100%;justify-content:center;">
+        <i class="fa-solid fa-trash"></i> 删除此记录
+      </button>
+    </div>
+  `;
+
+  document.getElementById('detailPanel').classList.add('active');
+  document.getElementById('detailBackdrop').classList.add('active');
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('active');
+  document.getElementById('detailBackdrop').classList.remove('active');
+  currentDetailId = null;
+}
+
+function editFromDetail() {
+  if (currentDetailId) {
+    closeDetail();
+    setTimeout(() => openEditModal(currentDetailId), 200);
+  }
+}
+
+function addTimelineEntry(appId) {
+  const app = applications.find(a => a.id === appId);
+  if (!app) return;
+
+  const date = document.getElementById('tlDate').value;
+  const status = document.getElementById('tlStatus').value;
+  const content = document.getElementById('tlContent').value.trim();
+  const note = document.getElementById('tlNote').value.trim();
+
+  if (!content) {
+    showToast('请填写进展描述', 'error');
+    return;
+  }
+
+  if (!app.timeline) app.timeline = [];
+  app.timeline.push({ date, status, content, note });
+
+  // Also update main status
+  app.status = status;
+  app.updatedAt = new Date().toISOString();
+
+  saveData();
+  renderAll();
+  openDetail(appId); // Refresh detail panel
+  showToast('进展已记录', 'success');
+}
+
+// ==================== Export ====================
+function toggleExportMenu() {
+  document.getElementById('exportDropdown').classList.toggle('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.export-menu')) {
+    document.getElementById('exportDropdown').classList.remove('active');
+  }
+});
+
+function exportCSV() {
+  const headers = ['公司', '岗位', '投递日期', '渠道', '状态', '关注度', '链接', '备注'];
+  const rows = applications.map(app => [
+    app.company,
+    app.position,
+    app.date || '',
+    app.channel || '',
+    STATUS_MAP[app.status]?.label || '',
+    PRIORITY_MAP[app.priority]?.label || '',
+    app.link || '',
+    app.note || ''
+  ]);
+
+  const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  downloadFile(csv, '投递记录.csv', 'text/csv;charset=utf-8');
+  showToast('CSV 已导出', 'success');
+  document.getElementById('exportDropdown').classList.remove('active');
+}
+
+function exportJSON() {
+  const json = JSON.stringify(applications, null, 2);
+  downloadFile(json, '投递记录.json', 'application/json');
+  showToast('JSON 已导出', 'success');
+  document.getElementById('exportDropdown').classList.remove('active');
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== Toast ====================
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+  toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${message}`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ==================== Sample Data ====================
+function loadSampleData() {
+  if (applications.length > 0 && !confirm('加载示例数据会覆盖当前数据，确定继续吗？')) return;
+
+  const today = new Date();
+  const d = (daysAgo) => {
+    const date = new Date(today);
+    date.setDate(date.getDate() - daysAgo);
+    return date.toISOString().split('T')[0];
+  };
+
+  applications = [
+    {
+      id: generateId(), company: '字节跳动', position: '前端开发工程师', date: d(15),
+      channel: 'BOSS直聘', link: '', status: 'interview2', priority: 5,
+      note: '学长说这轮重点看项目深度和React源码理解', createdAt: d(15), updatedAt: d(1),
+      timeline: [
+        { date: d(15), status: 'applied', content: '在BOSS直聘上投递了前端开发岗位', note: '' },
+        { date: d(10), status: 'test', content: '收到笔试邀请，在线编程', note: '算法题2道+前端场景题1道' },
+        { date: d(8), status: 'test', content: '完成笔试，感觉还行', note: '算法题全AC，场景题答了一半' },
+        { date: d(5), status: 'interview1', content: '收到一面通知', note: '4月20日下午2点，视频面试' },
+        { date: d(3), status: 'interview1', content: '一面完成', note: '面试官很nice，问了项目经历和CSS布局' },
+        { date: d(1), status: 'interview2', content: '收到二面通知', note: '4月22日，交叉面' }
+      ]
+    },
+    {
+      id: generateId(), company: '腾讯', position: '后端开发工程师', date: d(12),
+      channel: '校招官网', link: '', status: 'test', priority: 5,
+      note: '暑期实习转正机会', createdAt: d(12), updatedAt: d(2),
+      timeline: [
+        { date: d(12), status: 'applied', content: '通过校招官网投递', note: '' },
+        { date: d(5), status: 'test', content: '收到笔试邀请', note: '4月22日晚7点' }
+      ]
+    },
+    {
+      id: generateId(), company: '美团', position: '产品经理', date: d(20),
+      channel: '内推', link: '', status: 'offer', priority: 5,
+      note: '学长内推，已拿到offer！', createdAt: d(20), updatedAt: d(2),
+      timeline: [
+        { date: d(20), status: 'applied', content: '学长帮忙内推', note: '' },
+        { date: d(14), status: 'interview1', content: '一面完成', note: '聊了项目经历和产品思考' },
+        { date: d(10), status: 'interview2', content: '二面完成', note: 'case study，设计一个外卖推荐功能' },
+        { date: d(6), status: 'hr', content: 'HR面完成', note: '聊了职业规划和薪资期望' },
+        { date: d(2), status: 'offer', content: '收到offer！', note: 'base北京，薪资满意' }
+      ]
+    },
+    {
+      id: generateId(), company: '阿里巴巴', position: 'Java开发工程师', date: d(8),
+      channel: '牛客', link: '', status: 'interview1', priority: 4,
+      note: '', createdAt: d(8), updatedAt: d(1),
+      timeline: [
+        { date: d(8), status: 'applied', content: '在牛客上看到招聘信息并投递', note: '' },
+        { date: d(3), status: 'interview1', content: '收到一面通知', note: '4月21日' }
+      ]
+    },
+    {
+      id: generateId(), company: '小红书', position: '前端开发工程师', date: d(10),
+      channel: 'BOSS直聘', link: '', status: 'applied', priority: 4,
+      note: '上海base', createdAt: d(10), updatedAt: d(10),
+      timeline: [
+        { date: d(10), status: 'applied', content: 'BOSS直聘投递', note: '' }
+      ]
+    },
+    {
+      id: generateId(), company: '华为', position: '嵌入式开发工程师', date: d(18),
+      channel: '校招官网', link: '', status: 'test', priority: 3,
+      note: '', createdAt: d(18), updatedAt: d(4),
+      timeline: [
+        { date: d(18), status: 'applied', content: '校招官网投递', note: '' },
+        { date: d(7), status: 'test', content: '收到笔试通知', note: '4月23日' }
+      ]
+    },
+    {
+      id: generateId(), company: '网易', position: 'Go开发工程师', date: d(25),
+      channel: '官网', link: '', status: 'rejected', priority: 3,
+      note: '笔试没过', createdAt: d(25), updatedAt: d(10),
+      timeline: [
+        { date: d(25), status: 'applied', content: '官网投递', note: '' },
+        { date: d(18), status: 'test', content: '参加笔试', note: '题目偏难，算法题3道只做了1道' },
+        { date: d(10), status: 'rejected', content: '收到感谢信，笔试未通过', note: '' }
+      ]
+    },
+    {
+      id: generateId(), company: '京东', position: '数据分析师', date: d(30),
+      channel: 'BOSS直聘', link: '', status: 'silent', priority: 2,
+      note: '投了快一个月了没消息', createdAt: d(30), updatedAt: d(30),
+      timeline: [
+        { date: d(30), status: 'applied', content: 'BOSS直聘投递', note: '' }
+      ]
+    },
+    {
+      id: generateId(), company: '快手', position: '前端开发工程师', date: d(5),
+      channel: '内推', link: '', status: 'applied', priority: 4,
+      note: '同学帮忙内推', createdAt: d(5), updatedAt: d(5),
+      timeline: [
+        { date: d(5), status: 'applied', content: '同学帮忙内推', note: '' }
+      ]
+    },
+    {
+      id: generateId(), company: '拼多多', position: '后端开发工程师', date: d(22),
+      channel: '校招官网', link: '', status: 'hr', priority: 3,
+      note: '', createdAt: d(22), updatedAt: d(3),
+      timeline: [
+        { date: d(22), status: 'applied', content: '校招官网投递', note: '' },
+        { date: d(14), status: 'interview1', content: '一面完成', note: '' },
+        { date: d(8), status: 'interview2', content: '二面完成', note: '' },
+        { date: d(3), status: 'hr', content: 'HR面通知', note: '4月23日' }
+      ]
+    },
+    {
+      id: generateId(), company: '百度', position: '算法工程师', date: d(35),
+      channel: '牛客', link: '', status: 'rejected', priority: 2,
+      note: '', createdAt: d(35), updatedAt: d(15),
+      timeline: [
+        { date: d(35), status: 'applied', content: '牛客投递', note: '' },
+        { date: d(20), status: 'rejected', content: '简历未通过筛选', note: '' }
+      ]
+    },
+    {
+      id: generateId(), company: '小米', position: '产品经理', date: d(3),
+      channel: 'BOSS直聘', link: '', status: 'applied', priority: 3,
+      note: '', createdAt: d(3), updatedAt: d(3),
+      timeline: [
+        { date: d(3), status: 'applied', content: 'BOSS直聘投递', note: '' }
+      ]
+    },
+    {
+      id: generateId(), company: 'OPPO', position: '前端开发工程师', date: d(40),
+      channel: '官网', link: '', status: 'silent', priority: 1,
+      note: '投了好久了完全没消息', createdAt: d(40), updatedAt: d(40),
+      timeline: [
+        { date: d(40), status: 'applied', content: '官网投递', note: '' }
+      ]
+    },
+    {
+      id: generateId(), company: '滴滴', position: '后端开发工程师', date: d(7),
+      channel: '内推', link: '', status: 'interview1', priority: 3,
+      note: '', createdAt: d(7), updatedAt: d(2),
+      timeline: [
+        { date: d(7), status: 'applied', content: '学姐帮忙内推', note: '' },
+        { date: d(2), status: 'interview1', content: '收到一面通知', note: '4月22日' }
+      ]
+    }
+  ];
+
+  saveData();
+  renderAll();
+  showToast('示例数据已加载（14条记录）', 'success');
+}
+
+// ==================== Keyboard Shortcuts ====================
+document.addEventListener('keydown', (e) => {
+  // Escape to close modals/panels
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDetail();
+  }
+  // Ctrl+N to add new
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    openAddModal();
+  }
+});
+
+// ==================== Init ====================
+loadData();
+renderAll();
+</script>
+</body>
+</html>
